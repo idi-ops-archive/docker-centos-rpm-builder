@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -x
+set -e
 
 PACKAGE_NAME=erlang-mochiweb
 PACKAGE_REPO=https://github.com/gtirloni/rpm-centos-mochiweb
@@ -31,6 +32,8 @@ if [ $? -eq 0 ]; then
   echo "===> Moved patches to $SOURCES_DIR"
 fi
 
+cd $SOURCES_DIR
+
 spectool -g -A -R ${PACKAGE_NAME}.spec
 if [ $? -eq 0 ]; then
   echo "===> Retrieved sources with spectool"
@@ -51,4 +54,3 @@ mv -f $RPM_DIR/${PACKAGE_NAME}-*.rpm $OUTPUT_DIR
 if [ $? -eq 0 ]; then
   echo "===> Moved packages to output directory"
 fi
-
