@@ -26,7 +26,7 @@ if ! [ -d $SOURCES_DIR ]; then
   fi
 fi
 
-mv *.patch $SOURCES_DIR
+mv * $SOURCES_DIR
 if [ $? -eq 0 ]; then
   echo "===> Moved patches to $SOURCES_DIR"
 fi
