@@ -1,54 +1,62 @@
 #!/bin/bash
 
-set -x
+set -e  # Exit on error
 
-PACKAGE_NAME=erlang-mochiweb
-PACKAGE_REPO=https://github.com/gtirloni/rpm-centos-mochiweb
-PACKAGE_SPEC="${PACKAGE_NAME}.spec"
+usage() {
+  cat <<- EOF
 
-OUTPUT_DIR="/pkgs"
-RPM_DIR="$HOME/rpmbuild/RPMS/`uname -m`"
+  Usage: $(basename $0) <pkg_name> <pkg_repo> <output_dir> [deps_dir]
+
+    pkg_name    - Package name
+    pkg_repo    - URL to Git repository
+    output_dir  - Where packages should be stored when done
+    deps_dir    - Directory with build dependencies [OPTIONAL]
+
+  Every *.rpm package in deps_dir will be installed before the build
+  is attempted. This is to work around the fact that dependencies 
+  might not be available in a public repository.
+
+EOF
+}
+
+log() {
+  echo -e "\e[1;92m`date +"%Y-%m-%d %H:%M:%S%z"` -- $1\e[0m"
+}
+
+# Check if we've the right amount of parameters
+if [ $# -ge 3 && $# -le 4 ]; then
+  usage
+  exit 1
+fi
+
+PACKAGE_NAME=$1
+PACKAGE_REPO=$2
+OUTPUT_DIR=$3
+DEPS_DIR=$4
+
+RPMS_DIR="$HOME/rpmbuild/RPMS/`uname -m`"
 SOURCES_DIR="$HOME/rpmbuild/SOURCES"
 
-echo "===> Fetching repository: $PACKAGE_REPO"
+log "Fetching Git repository"
 REPO_DIR=`mktemp -d`
-cd $REPO_DIR
-/usr/bin/git clone $PACKAGE_REPO .
+git clone $PACKAGE_REPO $REPO_DIR
 
-echo "===> Installing build dependencies: $BUILD_REQUIRES"
-BUILD_REQUIRES=`egrep '^BuildRequires' $PACKAGE_SPEC | awk '{ printf("%s ", $2); }'`
-/usr/bin/yum install -y $BUILD_REQUIRES
+log "Creating rpmbuild hierarchy"
+mkdir -p $SOURCES_DIR
 
-if ! [ -d $SOURCES_DIR ]; then
-  mkdir -p $SOURCES_DIR
-  if [ $? -eq 0 ]; then
-    echo "===> Created SOURCES directory: $SOURCES_DIR"
-  fi
-fi
+log "Moving repository contents to rpmbuild/SOURCES"
+mv ${REPO_DIR}/* $SOURCES_DIR
+cd $SOURCES_DIR
 
-mv * $SOURCES_DIR
-if [ $? -eq 0 ]; then
-  echo "===> Moved patches to $SOURCES_DIR"
-fi
+log "Installing build dependencies"
+yum install -y `egrep '^BuildRequires' ${PACKAGE_NAME}.spec | awk '{ printf("%s ", $2); }'` `ls ${DEPS_DIR}/*.rpm`
 
+log "Retrieving sources"
 spectool -g -A -R ${PACKAGE_NAME}.spec
-if [ $? -eq 0 ]; then
-  echo "===> Retrieved sources with spectool"
-fi
 
+log "Build package(s)"
 rpmbuild -ba ${PACKAGE_NAME}.spec
-if [ $? -eq 0 ]; then
-  echo "===> Successfully built package(s)"
-fi
 
-# Copy packages to output area
+log "Copyring package(s) to output directory"
 mkdir -p $OUTPUT_DIR
-if [ $? -eq 0 ]; then
-  echo "===> Created output directory: $OUTPUT_DIR"
-fi
-
-mv -f $RPM_DIR/${PACKAGE_NAME}-*.rpm $OUTPUT_DIR
-if [ $? -eq 0 ]; then
-  echo "===> Moved packages to output directory"
-fi
-
+mv $RPMS_DIR/*.rpm $OUTPUT_DIR
