@@ -60,3 +60,6 @@ rpmbuild -ba ${PACKAGE_NAME}.spec
 log "Copyring package(s) to output directory"
 mkdir -p $OUTPUT_DIR
 mv $RPMS_DIR/*.rpm $OUTPUT_DIR
+
+log "Build completed"
+exit 0
