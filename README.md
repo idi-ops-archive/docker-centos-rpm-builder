@@ -11,7 +11,7 @@ Container images that includes support tools to builds RPMs for CentOS
 
  - `PACKAGE_NAME`: *required*: name of the package to build (should match specfile for the package repo)
  - `PACKAGE_REPO`: *required*: URL of GitHub repo to pull the package from
- - `OUTPUT_DIR`: *required*: output directory on Docker container to store packages
+ - `OUTPUT_DIR`: *required*: output directory on Docker container to store packages. Typically, you'll want to bind this to a host volume as well to keep the outputted packages.
  - `DEPS_DIR`: *optional*: directory of dependency local packages to install before building the package (this can use packages from the host system with volume binding, as shown below)
 
 ### Example - building couchdb
