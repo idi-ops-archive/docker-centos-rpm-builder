@@ -13,7 +13,7 @@ usage() {
     deps_dir    - Directory with build dependencies [OPTIONAL]
 
   Every *.rpm package in deps_dir will be installed before the build
-  is attempted. This is to work around the fact that dependencies 
+  is attempted. This is to work around the fact that dependencies
   might not be available in a public repository.
 
 EOF
@@ -24,7 +24,8 @@ log() {
 }
 
 # Check if we've the right amount of parameters
-if [ $# -ge 3 && $# -le 4 ]; then
+if [ $# -lt 3 -o $# -gt 4 ]; then
+  echo "Improper usage, only $# parameter(s) passed to script"
   usage
   exit 1
 fi

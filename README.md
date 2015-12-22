@@ -40,3 +40,7 @@ docker run --rm -v $PWD/output:/pkgs -it \
 -e DEPS_DIR=/pkgs \
 idi-ops/centos-rpm-builder
 ```
+
+docker run --rm -v $PWD/output:/pkgs -it \
+-e OUTPUT_DIR=/pkgs \
+idi-ops/centos-rpm-builder
